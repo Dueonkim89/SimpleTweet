@@ -1,5 +1,6 @@
 package com.codepath.apps.restclienttemplate.models
 
+import com.codepath.apps.restclienttemplate.TimeFormatter
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.ArrayList
@@ -27,5 +28,9 @@ class Tweet {
             }
             return tweets
         }
+    }
+
+    fun getFormattedTimestamp(date: String): String {
+        return TimeFormatter.getTimeDifference(date)
     }
 }
