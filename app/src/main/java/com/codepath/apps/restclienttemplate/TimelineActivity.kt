@@ -1,8 +1,11 @@
 package com.codepath.apps.restclienttemplate
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.view.MenuItem
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -54,6 +57,36 @@ class TimelineActivity : AppCompatActivity() {
         populateHomeTimeline()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.compose) {
+            val intent = Intent(this, ComposeActivity::class.java)
+            startActivityForResult(intent, REQUEST_CODE)
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    // this method is called when we come back from ComposeActivity
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE) {
+            // Get Data from intent.
+            val tweet = data?.getParcelableExtra("tweet") as Tweet
+
+            // Update timeline
+            // Modify the data source of tweets
+            tweets.add(0, tweet)
+            // Update adapter
+            adapter.notifyItemInserted(0)
+            // scroll recycle viewer to top
+            rvTweets.smoothScrollToPosition(0)
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
     fun populateHomeTimeline() {
         client.getHomeTimeline(object: JsonHttpResponseHandler() {
             override fun onSuccess(statusCode: Int, headers: Headers, json: JSON) {
@@ -68,7 +101,7 @@ class TimelineActivity : AppCompatActivity() {
                     // Now we call setRefreshing(false) to signal refresh has finished
                     swipeContainer.setRefreshing(false)
                 } catch (e: JSONException) {
-                    Log.i("DK321", "JSON Exception $e")
+                    Log.i(TAG, "JSON Exception $e")
                 }
             }
 
@@ -78,9 +111,13 @@ class TimelineActivity : AppCompatActivity() {
                 response: String?,
                 throwable: Throwable?
             ) {
-                Log.i("DK321", "Failure! $statusCode")
+                Log.i(TAG, "Failure! $statusCode")
             }
 
         })
+    }
+    companion object {
+        val TAG = "TimelineActivity"
+        val REQUEST_CODE = 10
     }
 }
